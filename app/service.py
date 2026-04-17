@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import re
-from typing import List
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
 
-from app.models import ActionItem, SummarizeRequest, SummarizeResponse
+from app.models import ActionItem, SummarizeRequest, SummarizeResponse, WikiEntry, WikiPublishRequest
 
 _OWNER_PATTERN = re.compile(r"\b([A-Z][a-zA-Z]+|DevOps|QA|Team)\b")
 _DUE_PATTERN = re.compile(
@@ -63,3 +64,39 @@ def summarize_notes(request: SummarizeRequest) -> SummarizeResponse:
         action_items=action_items,
         risks=risks,
     )
+
+
+# In-memory wiki store: ticket_id -> WikiEntry
+_wiki_store: Dict[str, WikiEntry] = {}
+
+
+def publish_to_wiki(request: WikiPublishRequest) -> WikiEntry:
+    summarize_req = SummarizeRequest(ticket_id=request.ticket_id, notes=request.notes)
+    result = summarize_notes(summarize_req)
+
+    title = request.title.strip() if request.title and request.title.strip() else f"Meeting Notes – {request.ticket_id}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    existing = _wiki_store.get(request.ticket_id)
+    created_at = existing.created_at if existing else now
+    updated_at = now if existing else None
+
+    entry = WikiEntry(
+        ticket_id=request.ticket_id,
+        title=title,
+        summary=result.summary,
+        action_items=result.action_items,
+        risks=result.risks,
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    _wiki_store[request.ticket_id] = entry
+    return entry
+
+
+def get_wiki_entries() -> List[WikiEntry]:
+    return list(_wiki_store.values())
+
+
+def get_wiki_entry(ticket_id: str) -> Optional[WikiEntry]:
+    return _wiki_store.get(ticket_id)
