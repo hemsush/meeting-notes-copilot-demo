@@ -1,0 +1,19 @@
+JIRA-241: Meeting Notes to Action Items Converter
+
+Build a Python-based API that accepts raw meeting notes and converts them into:
+- a concise summary
+- action items
+- owners
+- due dates if mentioned
+- risks or blockers
+
+The API should return structured JSON.
+The design should be simple, modular, and production-oriented.
+Unit tests should cover core behavior and validation.
+
+Acceptance criteria:
+1. The API accepts meeting notes as plain text.
+2. The API returns a concise summary and structured action items.
+3. Missing or empty notes should return validation errors.
+4. The service should expose a health endpoint.
+5. The project should include automated tests.

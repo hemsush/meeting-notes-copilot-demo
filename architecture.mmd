@@ -1,0 +1,7 @@
+flowchart TD
+    A[Client / Caller] --> B[FastAPI Endpoint]
+    B --> C[Request Validation]
+    C --> D[Summarizer Service]
+    D --> E[Extraction Logic / LLM Adapter]
+    E --> F[Structured JSON Response]
+    D --> G[Logging / Observability]

@@ -1,0 +1,7 @@
+Sprint Planning Meeting
+
+Ravi completed the login API and merged the changes.
+Priya will complete the dashboard UI by Friday.
+DevOps needs to confirm deployment access.
+Risk: staging environment instability.
+Follow-up meeting scheduled next Monday.

@@ -1,0 +1,30 @@
+@startuml
+!include https://raw.githubusercontent.com/kirchsth/C4-PlantUML/extended/C4_Container.puml
+
+AddRelTag("sync", $textColor="black", $lineColor="black", $lineStyle = DashedLine())
+
+LAYOUT_WITH_LEGEND()
+
+title Meeting Notes Summarizer - Container Diagram
+
+Person(caller, "Client / Caller", "Sends ticket ID and raw meeting notes.")
+System_Ext(llm, "LLM Provider (Optional)", "Can be used by adapter in production.")
+System_Boundary(system, "Meeting Notes Summarizer") {
+	Container(api, "FastAPI Endpoint", "Python, FastAPI", "Exposes /health and /summarize APIs.")
+	Container(validation, "Request Validation", "Pydantic Models", "Validates and normalizes request payload.")
+	Container(service, "Summarizer Service", "Python Service Layer", "Coordinates extraction and response creation.")
+	Container(extraction, "Extraction Logic / LLM Adapter", "Regex Rules + Adapter", "Extracts action items, owners, due dates, and risks.")
+	Container(response, "Structured JSON Response", "Pydantic Response Model", "Returns summary, action items, and risks.")
+	ContainerDb(observability, "Logging / Observability", "Application Logs", "Captures operational and diagnostic events.")
+}
+
+Rel_D(caller, api, "POST /summarize", $tags="sync")
+Rel_D(api, validation, "Validate payload", $tags="sync")
+Rel_D(validation, service, "Forward valid request", $tags="sync")
+Rel_D(service, extraction, "Extract structured data", $tags="sync")
+Rel_D(extraction, response, "Build response fields", $tags="sync")
+Rel_D(service, observability, "Write logs", $tags="sync")
+Rel_R(extraction, llm, "Optional provider call", $tags="sync")
+Rel_U(response, caller, "JSON result", $tags="sync")
+
+@enduml
