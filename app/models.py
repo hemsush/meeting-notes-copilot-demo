@@ -27,5 +27,7 @@ class ActionItem(BaseModel):
 class SummarizeResponse(BaseModel):
     ticket_id: str
     summary: str
+    decisions: List[str]
     action_items: List[ActionItem]
     risks: List[str]
+    participants: List[str]
