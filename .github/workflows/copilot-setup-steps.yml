@@ -1,0 +1,25 @@
+name: "Copilot setup steps"
+on: workflow_dispatch
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Run Copilot setup steps"
+        run: |
+          echo "Running Copilot setup steps..."
+          # Add your Copilot setup commands here
+          # For example:
+          # npm install -g copilot-cli
+          # copilot setup --config your-config-file.yaml
+            echo "Copilot setup steps completed."
+
+      - name: "authenticate with copilot"
+        run: |
+            echo "Authenticating with Copilot..."
+            # Add your Copilot authentication commands here
+            # For example:
+            # copilot auth login --token ${{ secrets.COPILOT_TOKEN }}
+            echo "Copilot authentication completed."
