@@ -1,0 +1,228 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Meeting Notes Summarizer",
+    "description": "\n## Meeting Notes Summarizer API\n\nAutomatically extract **summaries**, **action items**, and **risks** from raw meeting notes.\n\n### Endpoints\n\n| Method | Path | Description |\n|--------|------|-------------|\n| GET | `/health` | Liveness check |\n| POST | `/summarize` | Summarize meeting notes |\n\n### Usage\n\n1. Supply a tracking ticket ID and the raw text of your meeting notes.\n2. The API returns a structured summary with action items (owner, due date) and identified risks.\n",
+    "contact": {
+      "name": "Meeting Notes Copilot Demo",
+      "url": "https://github.com/hemsush/meeting-notes-copilot-demo"
+    },
+    "license": {
+      "name": "MIT"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health check",
+        "description": "Return a simple liveness status for the service.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/summarize": {
+      "post": {
+        "tags": [
+          "summarize"
+        ],
+        "summary": "Summarize meeting notes",
+        "description": "Summarize raw meeting notes for a given ticket.\n\n- **ticket_id**: JIRA or tracking ticket ID (e.g. `PROJ-123`)\n- **notes**: Free-form meeting notes text\n\nReturns a `SummarizeResponse` containing:\n- A high-level **summary** of the meeting\n- Extracted **action items** with optional owner and due date\n- Identified **risks** or blockers",
+        "operationId": "summarize_summarize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummarizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully summarized meeting notes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummarizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error \u2014 e.g. empty ticket_id or notes"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionItem": {
+        "properties": {
+          "task": {
+            "type": "string",
+            "title": "Task",
+            "description": "Description of the action item"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner",
+            "description": "Person or team responsible for the task"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date",
+            "description": "Due date or deadline for the task"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task"
+        ],
+        "title": "ActionItem",
+        "examples": [
+          {
+            "due_date": "by Friday",
+            "owner": "Alice",
+            "task": "Alice will deploy the service by Friday"
+          }
+        ]
+      },
+      "SummarizeRequest": {
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Ticket Id",
+            "description": "JIRA or tracking ticket ID",
+            "examples": [
+              "PROJ-123"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Notes",
+            "description": "Raw meeting notes to be summarized",
+            "examples": [
+              "Alice will deploy the service by Friday. Bob needs to update the docs. Risk: dependency on external API not yet confirmed."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "notes"
+        ],
+        "title": "SummarizeRequest",
+        "examples": [
+          {
+            "notes": "Alice will deploy the service by Friday. Bob needs to update the docs. Risk: dependency on external API not yet confirmed.",
+            "ticket_id": "PROJ-123"
+          }
+        ]
+      },
+      "SummarizeResponse": {
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "title": "Ticket Id",
+            "description": "The ticket ID from the request"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "High-level summary of the meeting notes"
+          },
+          "action_items": {
+            "items": {
+              "$ref": "#/components/schemas/ActionItem"
+            },
+            "type": "array",
+            "title": "Action Items",
+            "description": "List of action items extracted from the notes"
+          },
+          "risks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risks",
+            "description": "List of risks or blockers identified in the notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "summary",
+          "action_items",
+          "risks"
+        ],
+        "title": "SummarizeResponse",
+        "examples": [
+          {
+            "action_items": [
+              {
+                "due_date": "by Friday",
+                "owner": "Alice",
+                "task": "Alice will deploy the service by Friday"
+              }
+            ],
+            "risks": [
+              "dependency on external API not yet confirmed"
+            ],
+            "summary": "The meeting reviewed progress and identified follow-up work, ownership, and operational risks.",
+            "ticket_id": "PROJ-123"
+          }
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Service liveness and readiness checks."
+    },
+    {
+      "name": "summarize",
+      "description": "Extract summaries, action items, and risks from meeting notes."
+    }
+  ]
+}
